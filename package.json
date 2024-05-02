@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "@nx-extend/pulumi": "^5.0.5",
+    "@pulumi/aws": "^6.0.0",
+    "@pulumi/awsx": "^2.0.2",
+    "@pulumi/pulumi": "^3.113.0"
+  }
+}

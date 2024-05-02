@@ -1,0 +1,22 @@
+{
+  "version": "6.0",
+  "nxVersion": "18.3.4",
+  "deps": {
+    "@nx-extend/pulumi": "^5.0.5"
+  },
+  "pathMappings": {},
+  "nxJsonPlugins": [],
+  "fileMap": {
+    "projectFileMap": {},
+    "nonProjectFiles": [
+      {
+        "file": "package-lock.json",
+        "hash": "1494023778566879699"
+      },
+      {
+        "file": "package.json",
+        "hash": "17170298268268867222"
+      }
+    ]
+  }
+}
