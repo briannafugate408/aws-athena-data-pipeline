@@ -1,0 +1,1 @@
+{"version":3,"file":"data-fetching.module.js","sourceRoot":"","sources":["../src/data-fetching.module.ts"],"names":[],"mappings":";;;;;;;;;AAAA,mEAA8D;AAC9D,2CAAgD;AAOzC,IAAM,kBAAkB,GAAxB,MAAM,kBAAkB;CAAG,CAAA;AAArB,gDAAkB;6BAAlB,kBAAkB;IAL9B,IAAA,eAAM,GAAE;IACR,IAAA,eAAM,EAAC;QACN,SAAS,EAAE,CAAC,2CAAmB,CAAC;QAChC,OAAO,EAAE,CAAC,2CAAmB,CAAC;KAC/B,CAAC;GACW,kBAAkB,CAAG"}
