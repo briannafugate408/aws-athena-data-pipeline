@@ -1,7 +1,11 @@
 import {
   AthenaClient,
+  GetQueryExecutionCommandInput,
   StartQueryExecutionCommand,
   StartQueryExecutionInput,
+  GetQueryResultsCommand,
+  GetQueryExecutionInput,
+  GetQueryExecutionCommand,
 } from '@aws-sdk/client-athena';
 import { Injectable } from '@nestjs/common';
 
@@ -10,6 +14,43 @@ const ATHENA_CLIENT = new AthenaClient({ region: 'us-east-1' });
 @Injectable()
 export class DataFetchingService {
   constructor() {}
+
+  wait = async function (ms = 1000): Promise<void> {
+    console.log('WAITING 10 SECONDS BEFORE CHECKING QUERY STATUS AGAIN...');
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  };
+
+  checkQueryStatus = async function (
+    queryExecutionId: string,
+  ): Promise<boolean> {
+    console.log('CHECKING QUERY STATUS...');
+    const executionInput: GetQueryExecutionInput = {
+      QueryExecutionId: queryExecutionId,
+    };
+
+    let execuetionCommand = new GetQueryExecutionCommand(executionInput);
+    let executionRes = await ATHENA_CLIENT.send(execuetionCommand);
+    console.log('EXECUTION STATUS: ', executionRes.QueryExecution.Status.State);
+
+    // 3. Wait for query to complete
+    while (
+      executionRes.QueryExecution.Status.State === 'RUNNING' ||
+      executionRes.QueryExecution.Status.State === 'QUEUED'
+    ) {
+      await this.wait(10000);
+      execuetionCommand = new GetQueryExecutionCommand(executionInput);
+      executionRes = await ATHENA_CLIENT.send(execuetionCommand);
+      console.log(
+        'EXECUTION STATUS:',
+        executionRes.QueryExecution.Status.State,
+      );
+      if (executionRes.QueryExecution.Status.State === 'SUCCEEDED') {
+        return true;
+      }
+    }
+  };
 
   async fetchAllData(): Promise<string> {
     console.log('Fetching all order data');
@@ -26,17 +67,39 @@ export class DataFetchingService {
     };
 
     const command = new StartQueryExecutionCommand(input);
-    const response = await ATHENA_CLIENT.send(command);
-
     try {
+      const response = await ATHENA_CLIENT.send(command);
+      console.log('QUERY EXECUTION RESPONSE: ', response);
+
+      // 2. Check Query Execution Status
+      const isSuccessful = await this.checkQueryStatus(
+        response.QueryExecutionId,
+      );
+
+      // 4. Get Query Results When Query Execution is Succeeded
+      if (isSuccessful === true) {
+        console.log('QUERY EXECUTION SUCCEEDED!');
+
+        const getQueryResultCommand: GetQueryExecutionCommandInput = {
+          QueryExecutionId: response.QueryExecutionId,
+        };
+        const queryResultCommand = new GetQueryResultsCommand(
+          getQueryResultCommand,
+        );
+        const queryCommandRes = await ATHENA_CLIENT.send(queryResultCommand);
+        console.log('RESULTS: ', queryCommandRes.ResultSet.Rows);
+      }
+
       return JSON.stringify(response);
     } catch (error) {
-      return JSON.stringify(response);
+      console.log('ERROR: ', error);
     }
   }
 
   async fetchBatchOrderData(): Promise<string> {
     console.log('Fetching batch order data');
+
+    //1. Start Query Execution
     const input: StartQueryExecutionInput = {
       QueryString: 'SELECT * FROM orders WHERE ordertype = ?',
       QueryExecutionContext: {
@@ -51,12 +114,32 @@ export class DataFetchingService {
     };
 
     const command = new StartQueryExecutionCommand(input);
-    const response = await ATHENA_CLIENT.send(command);
-
     try {
+      const response = await ATHENA_CLIENT.send(command);
+      console.log('QUERY EXECUTION RESPONSE: ', response);
+
+      /// 2. Check Query Execution Status
+      const isSuccessful = await this.checkQueryStatus(
+        response.QueryExecutionId,
+      );
+
+      // 4. Get Query Results When Query Execution is Succeeded
+      if (isSuccessful) {
+        console.log('QUERY EXECUTION SUCCEEDED!');
+
+        const getQueryResultCommand: GetQueryExecutionCommandInput = {
+          QueryExecutionId: response.QueryExecutionId,
+        };
+        const queryResultCommand = new GetQueryResultsCommand(
+          getQueryResultCommand,
+        );
+        const queryCommandRes = await ATHENA_CLIENT.send(queryResultCommand);
+        console.log('RESULTS: ', queryCommandRes.ResultSet.Rows);
+      }
+
       return JSON.stringify(response);
     } catch (error) {
-      return JSON.stringify(response);
+      console.log('ERROR: ', error);
     }
   }
 }

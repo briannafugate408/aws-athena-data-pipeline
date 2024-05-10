@@ -14,8 +14,35 @@ const client_athena_1 = require("@aws-sdk/client-athena");
 const common_1 = require("@nestjs/common");
 const ATHENA_CLIENT = new client_athena_1.AthenaClient({ region: 'us-east-1' });
 let DataFetchingService = class DataFetchingService {
-    constructor() { }
+    constructor() {
+        this.wait = async function (ms = 1000) {
+            console.log('WAITING 10 SECONDS BEFORE CHECKING QUERY STATUS AGAIN...');
+            return new Promise((resolve) => {
+                setTimeout(resolve, ms);
+            });
+        };
+        this.checkQueryStatus = async function (queryExecutionId) {
+            console.log('CHECKING QUERY STATUS...');
+            const executionInput = {
+                QueryExecutionId: queryExecutionId,
+            };
+            let execuetionCommand = new client_athena_1.GetQueryExecutionCommand(executionInput);
+            let executionRes = await ATHENA_CLIENT.send(execuetionCommand);
+            console.log('EXECUTION STATUS: ', executionRes.QueryExecution.Status.State);
+            while (executionRes.QueryExecution.Status.State === 'RUNNING' ||
+                executionRes.QueryExecution.Status.State === 'QUEUED') {
+                await this.wait(10000);
+                execuetionCommand = new client_athena_1.GetQueryExecutionCommand(executionInput);
+                executionRes = await ATHENA_CLIENT.send(execuetionCommand);
+                console.log('EXECUTION STATUS:', executionRes.QueryExecution.Status.State);
+                if (executionRes.QueryExecution.Status.State === 'SUCCEEDED') {
+                    return true;
+                }
+            }
+        };
+    }
     async fetchAllData() {
+        console.log('Fetching all order data');
         const input = {
             QueryString: 'SELECT * FROM orders',
             QueryExecutionContext: {
@@ -28,12 +55,23 @@ let DataFetchingService = class DataFetchingService {
             },
         };
         const command = new client_athena_1.StartQueryExecutionCommand(input);
-        const response = await ATHENA_CLIENT.send(command);
         try {
+            const response = await ATHENA_CLIENT.send(command);
+            console.log('QUERY EXECUTION RESPONSE: ', response);
+            const isSuccessful = await this.checkQueryStatus(response.QueryExecutionId);
+            if (isSuccessful === true) {
+                console.log('QUERY EXECUTION SUCCEEDED!');
+                const getQueryResultCommand = {
+                    QueryExecutionId: response.QueryExecutionId,
+                };
+                const queryResultCommand = new client_athena_1.GetQueryResultsCommand(getQueryResultCommand);
+                const queryCommandRes = await ATHENA_CLIENT.send(queryResultCommand);
+                console.log('RESULTS: ', queryCommandRes.ResultSet.Rows);
+            }
             return JSON.stringify(response);
         }
         catch (error) {
-            return JSON.stringify(response);
+            console.log('ERROR: ', error);
         }
     }
     async fetchBatchOrderData() {
@@ -51,12 +89,23 @@ let DataFetchingService = class DataFetchingService {
             },
         };
         const command = new client_athena_1.StartQueryExecutionCommand(input);
-        const response = await ATHENA_CLIENT.send(command);
         try {
+            const response = await ATHENA_CLIENT.send(command);
+            console.log('QUERY EXECUTION RESPONSE: ', response);
+            const isSuccessful = await this.checkQueryStatus(response.QueryExecutionId);
+            if (isSuccessful) {
+                console.log('QUERY EXECUTION SUCCEEDED!');
+                const getQueryResultCommand = {
+                    QueryExecutionId: response.QueryExecutionId,
+                };
+                const queryResultCommand = new client_athena_1.GetQueryResultsCommand(getQueryResultCommand);
+                const queryCommandRes = await ATHENA_CLIENT.send(queryResultCommand);
+                console.log('RESULTS: ', queryCommandRes.ResultSet.Rows);
+            }
             return JSON.stringify(response);
         }
         catch (error) {
-            return JSON.stringify(response);
+            console.log('ERROR: ', error);
         }
     }
 };
