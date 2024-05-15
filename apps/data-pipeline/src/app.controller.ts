@@ -14,4 +14,14 @@ export class AppController {
   fetchBatchOrderData(): Promise<string> {
     return this.dataFetchingService.fetchBatchOrderData();
   }
+
+  @Get('join')
+  fetchOrderDataAndIngredients(): Promise<string> {
+    return this.dataFetchingService.fetchOrderDataAndIngredients();
+  }
+
+  @Get('filter')
+  fetchFilteredData(): Promise<string> {
+    return this.dataFetchingService.fetchOrderDataAndIngredientsForQSROrder();
+  }
 }

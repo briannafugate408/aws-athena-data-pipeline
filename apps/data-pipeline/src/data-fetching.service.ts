@@ -15,7 +15,7 @@ const ATHENA_CLIENT = new AthenaClient({ region: 'us-east-1' });
 export class DataFetchingService {
   constructor() {}
 
-  wait = async function (ms = 1000): Promise<void> {
+  wait = async function (ms = 10000): Promise<void> {
     console.log('WAITING 10 SECONDS BEFORE CHECKING QUERY STATUS AGAIN...');
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
@@ -87,7 +87,7 @@ export class DataFetchingService {
           getQueryResultCommand,
         );
         const queryCommandRes = await ATHENA_CLIENT.send(queryResultCommand);
-        console.log('RESULTS: ', queryCommandRes.ResultSet.Rows);
+        console.log('RESULTS: ', queryCommandRes.ResultSet.Rows[0]);
       }
 
       return JSON.stringify(response);
@@ -141,5 +141,100 @@ export class DataFetchingService {
     } catch (error) {
       console.log('ERROR: ', error);
     }
+  }
+
+  async fetchOrderDataAndIngredients(): Promise<string> {
+    console.log('Fetching ingredients join statement');
+
+    const input: StartQueryExecutionInput = {
+      QueryString:
+        'SELECT o.orderid, o.id, o.recipeid, i.ingredients as ingredients FROM orders as o RIGHT JOIN ingredients as i ON o.orderid = i.orderid',
+      QueryExecutionContext: {
+        Database: 'testing',
+      },
+      ResultConfiguration: {
+        OutputLocation: 's3://brute-force-assets-bucket-assets-54387d2/Unsaved',
+        EncryptionConfiguration: { EncryptionOption: 'SSE_S3' },
+        ExpectedBucketOwner: '339712892782',
+      },
+    };
+
+    const command = new StartQueryExecutionCommand(input);
+    try {
+      const response = await ATHENA_CLIENT.send(command);
+      console.log('QUERY EXECUTION RESPONSE: ', response);
+
+      /// 2. Check Query Execution Status
+      const isSuccessful = await this.checkQueryStatus(
+        response.QueryExecutionId,
+      );
+
+      // 4. Get Query Results When Query Execution is Succeeded
+      if (isSuccessful) {
+        console.log('QUERY EXECUTION SUCCEEDED!');
+
+        const getQueryResultCommand: GetQueryExecutionCommandInput = {
+          QueryExecutionId: response.QueryExecutionId,
+        };
+        const queryResultCommand = new GetQueryResultsCommand(
+          getQueryResultCommand,
+        );
+        const queryCommandRes = await ATHENA_CLIENT.send(queryResultCommand);
+        console.log('RESULTS: ', queryCommandRes.ResultSet.Rows);
+      }
+
+      return JSON.stringify(response);
+    } catch (error) {
+      console.log('ERROR: ', error);
+    }
+  }
+
+  async fetchOrderDataAndIngredientsForQSROrder(): Promise<string> {
+    console.log('Fetching ingredients for qsr order join');
+
+    const input: StartQueryExecutionInput = {
+      QueryString:
+        'SELECT o.orderid, o.id, o.recipeid, o.ordertype, i.ingredients as ingredients FROM orders as o RIGHT JOIN ingredients as i ON o.orderid = i.orderid WHERE o.ordertype = ?',
+      ExecutionParameters: ['DIRECT_INTEGRATION_QSR'],
+      QueryExecutionContext: {
+        Database: 'testing',
+      },
+      ResultConfiguration: {
+        OutputLocation: 's3://brute-force-assets-bucket-assets-54387d2/Unsaved',
+        EncryptionConfiguration: { EncryptionOption: 'SSE_S3' },
+        ExpectedBucketOwner: '339712892782',
+      },
+    };
+
+    const command = new StartQueryExecutionCommand(input);
+    try {
+      const response = await ATHENA_CLIENT.send(command);
+      console.log('QUERY EXECUTION RESPONSE: ', response);
+
+      /// 2. Check Query Execution Status
+      const isSuccessful = await this.checkQueryStatus(
+        response.QueryExecutionId,
+      );
+
+      // 4. Get Query Results When Query Execution is Succeeded
+      if (isSuccessful) {
+        console.log('QUERY EXECUTION SUCCEEDED!');
+
+        const getQueryResultCommand: GetQueryExecutionCommandInput = {
+          QueryExecutionId: response.QueryExecutionId,
+        };
+        const queryResultCommand = new GetQueryResultsCommand(
+          getQueryResultCommand,
+        );
+        const queryCommandRes = await ATHENA_CLIENT.send(queryResultCommand);
+        console.log('RESULTS: ', queryCommandRes.ResultSet.Rows);
+      }
+
+      return JSON.stringify(response);
+    } catch (error) {
+      console.log('ERROR: ', error);
+    }
+
+    return '';
   }
 }
