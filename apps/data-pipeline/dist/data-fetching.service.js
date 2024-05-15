@@ -15,7 +15,7 @@ const common_1 = require("@nestjs/common");
 const ATHENA_CLIENT = new client_athena_1.AthenaClient({ region: 'us-east-1' });
 let DataFetchingService = class DataFetchingService {
     constructor() {
-        this.wait = async function (ms = 1000) {
+        this.wait = async function (ms = 10000) {
             console.log('WAITING 10 SECONDS BEFORE CHECKING QUERY STATUS AGAIN...');
             return new Promise((resolve) => {
                 setTimeout(resolve, ms);
@@ -66,7 +66,7 @@ let DataFetchingService = class DataFetchingService {
                 };
                 const queryResultCommand = new client_athena_1.GetQueryResultsCommand(getQueryResultCommand);
                 const queryCommandRes = await ATHENA_CLIENT.send(queryResultCommand);
-                console.log('RESULTS: ', queryCommandRes.ResultSet.Rows);
+                console.log('RESULTS: ', queryCommandRes.ResultSet.Rows[0]);
             }
             return JSON.stringify(response);
         }
@@ -107,6 +107,74 @@ let DataFetchingService = class DataFetchingService {
         catch (error) {
             console.log('ERROR: ', error);
         }
+    }
+    async fetchOrderDataAndIngredients() {
+        console.log('Fetching ingredients join statement');
+        const input = {
+            QueryString: 'SELECT o.orderid, o.id, o.recipeid, i.ingredients as ingredients FROM orders as o RIGHT JOIN ingredients as i ON o.orderid = i.orderid',
+            QueryExecutionContext: {
+                Database: 'testing',
+            },
+            ResultConfiguration: {
+                OutputLocation: 's3://brute-force-assets-bucket-assets-54387d2/Unsaved',
+                EncryptionConfiguration: { EncryptionOption: 'SSE_S3' },
+                ExpectedBucketOwner: '339712892782',
+            },
+        };
+        const command = new client_athena_1.StartQueryExecutionCommand(input);
+        try {
+            const response = await ATHENA_CLIENT.send(command);
+            console.log('QUERY EXECUTION RESPONSE: ', response);
+            const isSuccessful = await this.checkQueryStatus(response.QueryExecutionId);
+            if (isSuccessful) {
+                console.log('QUERY EXECUTION SUCCEEDED!');
+                const getQueryResultCommand = {
+                    QueryExecutionId: response.QueryExecutionId,
+                };
+                const queryResultCommand = new client_athena_1.GetQueryResultsCommand(getQueryResultCommand);
+                const queryCommandRes = await ATHENA_CLIENT.send(queryResultCommand);
+                console.log('RESULTS: ', queryCommandRes.ResultSet.Rows);
+            }
+            return JSON.stringify(response);
+        }
+        catch (error) {
+            console.log('ERROR: ', error);
+        }
+    }
+    async fetchOrderDataAndIngredientsForQSROrder() {
+        console.log('Fetching ingredients for qsr order join');
+        const input = {
+            QueryString: 'SELECT o.orderid, o.id, o.recipeid, o.ordertype, i.ingredients as ingredients FROM orders as o RIGHT JOIN ingredients as i ON o.orderid = i.orderid WHERE o.ordertype = ?',
+            ExecutionParameters: ['DIRECT_INTEGRATION_QSR'],
+            QueryExecutionContext: {
+                Database: 'testing',
+            },
+            ResultConfiguration: {
+                OutputLocation: 's3://brute-force-assets-bucket-assets-54387d2/Unsaved',
+                EncryptionConfiguration: { EncryptionOption: 'SSE_S3' },
+                ExpectedBucketOwner: '339712892782',
+            },
+        };
+        const command = new client_athena_1.StartQueryExecutionCommand(input);
+        try {
+            const response = await ATHENA_CLIENT.send(command);
+            console.log('QUERY EXECUTION RESPONSE: ', response);
+            const isSuccessful = await this.checkQueryStatus(response.QueryExecutionId);
+            if (isSuccessful) {
+                console.log('QUERY EXECUTION SUCCEEDED!');
+                const getQueryResultCommand = {
+                    QueryExecutionId: response.QueryExecutionId,
+                };
+                const queryResultCommand = new client_athena_1.GetQueryResultsCommand(getQueryResultCommand);
+                const queryCommandRes = await ATHENA_CLIENT.send(queryResultCommand);
+                console.log('RESULTS: ', queryCommandRes.ResultSet.Rows);
+            }
+            return JSON.stringify(response);
+        }
+        catch (error) {
+            console.log('ERROR: ', error);
+        }
+        return '';
     }
 };
 exports.DataFetchingService = DataFetchingService;

@@ -4,4 +4,6 @@ export declare class AppController {
     constructor(dataFetchingService: DataFetchingService);
     fetchAllData(): Promise<string>;
     fetchBatchOrderData(): Promise<string>;
+    fetchOrderDataAndIngredients(): Promise<string>;
+    fetchFilteredData(): Promise<string>;
 }

@@ -4,4 +4,6 @@ export declare class DataFetchingService {
     checkQueryStatus: (queryExecutionId: string) => Promise<boolean>;
     fetchAllData(): Promise<string>;
     fetchBatchOrderData(): Promise<string>;
+    fetchOrderDataAndIngredients(): Promise<string>;
+    fetchOrderDataAndIngredientsForQSROrder(): Promise<string>;
 }

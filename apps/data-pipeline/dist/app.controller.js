@@ -22,6 +22,12 @@ let AppController = class AppController {
     fetchBatchOrderData() {
         return this.dataFetchingService.fetchBatchOrderData();
     }
+    fetchOrderDataAndIngredients() {
+        return this.dataFetchingService.fetchOrderDataAndIngredients();
+    }
+    fetchFilteredData() {
+        return this.dataFetchingService.fetchOrderDataAndIngredientsForQSROrder();
+    }
 };
 exports.AppController = AppController;
 __decorate([
@@ -36,6 +42,18 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], AppController.prototype, "fetchBatchOrderData", null);
+__decorate([
+    (0, common_1.Get)('join'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "fetchOrderDataAndIngredients", null);
+__decorate([
+    (0, common_1.Get)('filter'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "fetchFilteredData", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [data_fetching_service_1.DataFetchingService])
