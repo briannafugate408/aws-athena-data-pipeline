@@ -53,6 +53,12 @@ let DataFetchingService = class DataFetchingService {
                 EncryptionConfiguration: { EncryptionOption: 'SSE_S3' },
                 ExpectedBucketOwner: '339712892782',
             },
+            ResultReuseConfiguration: {
+                ResultReuseByAgeConfiguration: {
+                    Enabled: true,
+                    MaxAgeInMinutes: 60,
+                },
+            },
         };
         const command = new client_athena_1.StartQueryExecutionCommand(input);
         try {
@@ -87,6 +93,12 @@ let DataFetchingService = class DataFetchingService {
                 EncryptionConfiguration: { EncryptionOption: 'SSE_S3' },
                 ExpectedBucketOwner: '339712892782',
             },
+            ResultReuseConfiguration: {
+                ResultReuseByAgeConfiguration: {
+                    Enabled: true,
+                    MaxAgeInMinutes: 60,
+                },
+            },
         };
         const command = new client_athena_1.StartQueryExecutionCommand(input);
         try {
@@ -119,6 +131,12 @@ let DataFetchingService = class DataFetchingService {
                 OutputLocation: 's3://brute-force-assets-bucket-assets-54387d2/Unsaved',
                 EncryptionConfiguration: { EncryptionOption: 'SSE_S3' },
                 ExpectedBucketOwner: '339712892782',
+            },
+            ResultReuseConfiguration: {
+                ResultReuseByAgeConfiguration: {
+                    Enabled: true,
+                    MaxAgeInMinutes: 60,
+                },
             },
         };
         const command = new client_athena_1.StartQueryExecutionCommand(input);
@@ -153,6 +171,12 @@ let DataFetchingService = class DataFetchingService {
                 OutputLocation: 's3://brute-force-assets-bucket-assets-54387d2/Unsaved',
                 EncryptionConfiguration: { EncryptionOption: 'SSE_S3' },
                 ExpectedBucketOwner: '339712892782',
+            },
+            ResultReuseConfiguration: {
+                ResultReuseByAgeConfiguration: {
+                    Enabled: true,
+                    MaxAgeInMinutes: 60,
+                },
             },
         };
         const command = new client_athena_1.StartQueryExecutionCommand(input);
