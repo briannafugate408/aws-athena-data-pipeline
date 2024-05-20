@@ -15,7 +15,7 @@ const common_1 = require("@nestjs/common");
 const ATHENA_CLIENT = new client_athena_1.AthenaClient({ region: 'us-east-1' });
 let DataFetchingService = class DataFetchingService {
     constructor() {
-        this.wait = async function (ms = 10000) {
+        this.wait = async function (ms = 3000) {
             console.log('WAITING 10 SECONDS BEFORE CHECKING QUERY STATUS AGAIN...');
             return new Promise((resolve) => {
                 setTimeout(resolve, ms);
@@ -31,7 +31,7 @@ let DataFetchingService = class DataFetchingService {
             console.log('EXECUTION STATUS: ', executionRes.QueryExecution.Status.State);
             while (executionRes.QueryExecution.Status.State === 'RUNNING' ||
                 executionRes.QueryExecution.Status.State === 'QUEUED') {
-                await this.wait(10000);
+                await this.wait(3000);
                 execuetionCommand = new client_athena_1.GetQueryExecutionCommand(executionInput);
                 executionRes = await ATHENA_CLIENT.send(execuetionCommand);
                 console.log('EXECUTION STATUS:', executionRes.QueryExecution.Status.State);
@@ -56,7 +56,7 @@ let DataFetchingService = class DataFetchingService {
             ResultReuseConfiguration: {
                 ResultReuseByAgeConfiguration: {
                     Enabled: true,
-                    MaxAgeInMinutes: 60,
+                    MaxAgeInMinutes: 5,
                 },
             },
         };
@@ -96,7 +96,7 @@ let DataFetchingService = class DataFetchingService {
             ResultReuseConfiguration: {
                 ResultReuseByAgeConfiguration: {
                     Enabled: true,
-                    MaxAgeInMinutes: 60,
+                    MaxAgeInMinutes: 5,
                 },
             },
         };
@@ -135,7 +135,7 @@ let DataFetchingService = class DataFetchingService {
             ResultReuseConfiguration: {
                 ResultReuseByAgeConfiguration: {
                     Enabled: true,
-                    MaxAgeInMinutes: 60,
+                    MaxAgeInMinutes: 5,
                 },
             },
         };
@@ -175,7 +175,7 @@ let DataFetchingService = class DataFetchingService {
             ResultReuseConfiguration: {
                 ResultReuseByAgeConfiguration: {
                     Enabled: true,
-                    MaxAgeInMinutes: 60,
+                    MaxAgeInMinutes: 5,
                 },
             },
         };
