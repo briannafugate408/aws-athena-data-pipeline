@@ -15,7 +15,7 @@ const ATHENA_CLIENT = new AthenaClient({ region: 'us-east-1' });
 export class DataFetchingService {
   constructor() {}
 
-  wait = async function (ms = 10000): Promise<void> {
+  wait = async function (ms = 3000): Promise<void> {
     console.log('WAITING 10 SECONDS BEFORE CHECKING QUERY STATUS AGAIN...');
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
@@ -39,7 +39,7 @@ export class DataFetchingService {
       executionRes.QueryExecution.Status.State === 'RUNNING' ||
       executionRes.QueryExecution.Status.State === 'QUEUED'
     ) {
-      await this.wait(10000);
+      await this.wait(3000);
       execuetionCommand = new GetQueryExecutionCommand(executionInput);
       executionRes = await ATHENA_CLIENT.send(execuetionCommand);
       console.log(
@@ -67,7 +67,7 @@ export class DataFetchingService {
       ResultReuseConfiguration: {
         ResultReuseByAgeConfiguration: {
           Enabled: true,
-          MaxAgeInMinutes: 60,
+          MaxAgeInMinutes: 5,
         },
       },
     };
@@ -120,7 +120,7 @@ export class DataFetchingService {
       ResultReuseConfiguration: {
         ResultReuseByAgeConfiguration: {
           Enabled: true,
-          MaxAgeInMinutes: 60,
+          MaxAgeInMinutes: 5,
         },
       },
     };
@@ -172,7 +172,7 @@ export class DataFetchingService {
       ResultReuseConfiguration: {
         ResultReuseByAgeConfiguration: {
           Enabled: true,
-          MaxAgeInMinutes: 60,
+          MaxAgeInMinutes: 5,
         },
       },
     };
@@ -225,7 +225,7 @@ export class DataFetchingService {
       ResultReuseConfiguration: {
         ResultReuseByAgeConfiguration: {
           Enabled: true,
-          MaxAgeInMinutes: 60,
+          MaxAgeInMinutes: 5,
         },
       },
     };
